@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { fetchFromAPI } from '../utils/fetchFromApi';
 import { useParams } from 'react-router-dom';
+import ErrorModal from '../components/ErrorModal';
 
 type VideoDetails = {
   id: string;
@@ -62,6 +63,7 @@ const Watch: React.FC = () => {
   const videoId = videoIdParam || '';
   const [details, setDetails] = useState<VideoDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorDismissed, setErrorDismissed] = useState<boolean>((window as any).__uplayApiErrorDismissed || false);
   const [loading, setLoading] = useState(false);
   const [playerError, setPlayerError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
@@ -249,8 +251,17 @@ const Watch: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4">
+      <ErrorModal
+        open={!!error && !errorDismissed}
+        title="API Limit Reached"
+        message={error || ''}
+        onClose={() => {
+          (window as any).__uplayApiErrorDismissed = true;
+          setErrorDismissed(true);
+        }}
+      />
       {loading && <div className="text-gray-400 py-8">Loading…</div>}
-      {error && <div className="text-red-400 py-8">{error}</div>}
+      {/* no inline error; modal handles error display */}
       {!loading && !error && (
         <>
           <div className="w-full mt-4 rounded overflow-hidden bg-black">
